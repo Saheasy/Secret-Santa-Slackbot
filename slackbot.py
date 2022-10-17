@@ -1,38 +1,103 @@
 import os
-import random
 import requests
-import re
-import blocks
+import datetime 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
 load_dotenv()
+
+class SecretSanta:
+    def __init__(self, app_token, user_token, bot_token):
+        self.app_token = os.environ.get("SLACK_BOT_TOKEN")
+        self.user_token = os.environ.get("SLACK_USER_TOKEN")
+        self.bot_token = os.environ["SLACK_APP_TOKEN"]
+
+        self.app = App(token=app_token)
 
 
 # Initializes your app with your bot token and socket mode handler
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 user = os.environ.get("SLACK_USER_TOKEN")
 
-
-# My Dadjoke Slash Command
-# Send a dadjoke via "icanhazdadjoke.com"'s api
-@app.command("/dadjoke")
-def dadjoke(ack, respond, payload):
-  message = requests.get("https://icanhazdadjoke.com/",
-                         headers={"Accept": "text/plain"}).text
-  ack()
-  respond(message)
-
 @app.command("/begin")
 def secretSanta_begin(ack, respond, payload):
-  blocks =  blocks.begin_block
+  blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": ":santa: Secret Santa :santa:",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*You want to begin the process of having a Secret Santa this year!*\nPlease fill out the following information..."
+                }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Pick a deadline to signup by:"
+                },
+                "accessory": {
+                    "type": "datepicker",
+                    "initial_date": f'{datetime.date.today()}',
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select a date",
+                        "emoji": True
+                    },
+                    "action_id": "datepicker-action"
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "multi_users_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select users",
+                        "emoji": True
+                    },
+                    "action_id": "multi_users_select-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Choose some users to start!",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Select a channel for Secret Santa to post in*"
+                },
+                "accessory": {
+                    "type": "channels_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select a channel",
+                        "emoji": True
+                    },
+                    "action_id": "users_select-action"
+                }
+            }
+        ]
   ack()
   respond(text="Secret Santa Begin Message", blocks=blocks)
 
 
 # Listen for a button invocation with action_id `coffee` 
 @app.action("coffee")
-def open_modal(ack, body, client):
+def open_coffee(ack, body, client):
     # Acknowledge the command request
     ack()
     # Call views_open with the built-in client
@@ -64,6 +129,108 @@ def open_modal(ack, body, client):
                 "image_url": requests.get('https://coffee.alexflipnote.dev/random.json').json()['file'],
                 "alt_text": "some coffee"
               }
+            ]
+        }
+    )
+
+# Listen for a shortcut invocation
+@app.shortcut("begin")
+def open_modal(ack, body, client):
+    # Acknowledge the command request
+    print(body.keys())
+    print(client.keys())
+    ack()
+    # Call views_open with the built-in client
+    client.views_open(
+        # Pass a valid trigger_id within 3 seconds of receiving it
+        trigger_id=body["trigger_id"],
+        # View payload
+        view={
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "My App",
+                "emoji": True
+            },
+            "submit": {
+                "type": "plain_text",
+                "text": "Submit",
+                "emoji": True
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Cancel",
+                "emoji": True
+            },
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": ":santa: Secret Santa :santa:",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*You want to begin the process of having a Secret Santa this year!*\nPlease fill out the following information..."
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Pick a deadline to signup by:"
+                    },
+                    "accessory": {
+                        "type": "datepicker",
+                        "initial_date": "1990-04-28",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a date",
+                            "emoji": True
+                        },
+                        "action_id": "datepicker-action"
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "multi_users_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select users",
+                            "emoji": True
+                        },
+                        "action_id": "multi_users_select-action"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Choose some users to start!",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Select a channel for Secret Santa to post in*"
+                    },
+                    "accessory": {
+                        "type": "channels_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a channel",
+                            "emoji": True
+                        },
+                        "action_id": "users_select-action"
+                    }
+                }
             ]
         }
     )
@@ -109,37 +276,70 @@ def open_modal(ack, body, client):
         }
     )
 
-# Listen for a button invocation with action_id `button_abc` (assume it's inside of a modal)
-@app.action("button_abc")
-def update_modal(ack, body, client):
-    # Acknowledge the button request
+# Listen for a shortcut invocation
+@app.shortcut("user_secret_santa")
+def user_secret_santa(ack, body, client):
+    # Acknowledge the command request
     ack()
-    # Call views_update with the built-in client
-    client.views_update(
-        # Pass the view_id
-        view_id=body["view"]["id"],
-        # String that represents view state to protect against race conditions
-        hash=body["view"]["hash"],
-        # View payload with updated blocks
+    print(body['trigger_id'])
+    # Call views_open with the built-in client
+    client.views_open(
+        # Pass a valid trigger_id within 3 seconds of receiving it
+        trigger_id=body["trigger_id"],
+        # View payload
         view={
             "type": "modal",
-            # View identifier
-            "callback_id": "view_1",
-            "title": {"type": "plain_text", "text": "Updated modal"},
+            "callback_id": "user_secret_santa_submission",
+            "title": {
+                "type": "plain_text",
+                "text": "My App",
+                "emoji": True
+            },
+            "submit": {
+                "type": "plain_text",
+                "text": "Submit",
+                "emoji": True,
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Close",
+                "emoji": True
+            },
             "blocks": [
                 {
-                    "type": "section",
-                    "text": {"type": "plain_text", "text": "You updated the modal!"}
+                    "type": "divider"
                 },
                 {
-                    "type": "image",
-                    "image_url": "https://media.giphy.com/media/SVZGEcYt7brkFUyU90/giphy.gif",
-                    "alt_text": "Yay! The modal was updated"
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "This is the page to edit your profile for Secret Santa."
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "multiline": True,
+                        "action_id": "plain_text_input-action"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "List your interests here",
+                        "emoji": True
+                    }
                 }
             ]
         }
     )
 
+@app.view("user_secret_santa_submission")
+def handle_secret_santa_submission(ack, body, logger, payload):
+    ack()
+    print(body.keys())
+    print(body['user'], body['team'])
+    print(payload)
+    logger.info(body)
 
 #Event loggers that record events that happen
 #This leads to less errors in the terminal as well
