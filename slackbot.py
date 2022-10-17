@@ -6,15 +6,6 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
 load_dotenv()
 
-class SecretSanta:
-    def __init__(self, app_token, user_token, bot_token):
-        self.app_token = os.environ.get("SLACK_BOT_TOKEN")
-        self.user_token = os.environ.get("SLACK_USER_TOKEN")
-        self.bot_token = os.environ["SLACK_APP_TOKEN"]
-
-        self.app = App(token=app_token)
-
-
 # Initializes your app with your bot token and socket mode handler
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 user = os.environ.get("SLACK_USER_TOKEN")
