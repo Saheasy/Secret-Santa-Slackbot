@@ -1,1 +1,30 @@
-{"users": {"Spencer": {"name": "spencer sahu", "interests": "", "groups": "Pathfinders Protozoic", "location": "Iowa City", "secret_santa_recipient": "", "roles": []}}, "begin-deadline": "", "start-deadline": ""}
+{
+  "users": {
+    "Spencer": {
+      "name": "spencer sahu",
+      "interests": "",
+      "groups": "Pathfinders Protozoic",
+      "location": "Iowa City",
+      "secret_santa_recipient": "",
+      "roles": "user"
+    },
+    "Sadie": {
+      "name": "sadie",
+      "interests": "cats and things",
+      "groups": "Pathfinders Protozoic",
+      "location": "Iowa City",
+      "secret_santa_recipient": "",
+      "roles": "user"
+    },
+    "Michelle": {
+      "name": "michelle",
+      "interests": "Penguins, crafts and pool",
+      "groups": "Pathfinders Leadership",
+      "location": "Iowa City",
+      "secret_santa_recipient": "",
+      "roles": "manager"
+    }
+  },
+  "begin-deadline": "",
+  "start-deadline": ""
+}

@@ -1,7 +1,8 @@
 import random
-import json_parser
+from json_parser import JsonParser
 
 class SecretSanta(JsonParser):
+
     pathfinders = {
         "michelle" : {
             "interests":"Penguins, crafts and pool", 
@@ -97,15 +98,16 @@ class SecretSanta(JsonParser):
         "will" : "Star Wars. Recomendation: Starbucks gift card."
         } #end of dictionary 
     
-    def __init__(self):
-        pass
+    def __init__(self, filename):
+        JsonParser.__init__(self,filename)
 
     def randomize(self):
-        my_list = list(self.pathfinders.keys())
+        
+        my_list = list(self.data['users'].keys())
         random.shuffle(my_list)
         pairs = zip(my_list[::2], my_list[1::2] )
         print(dict(pairs))
 
 if __name__ == "__main__":
-    thisYear = SecretSanta()
+    thisYear = SecretSanta('test.json')
     thisYear.randomize()

@@ -27,7 +27,17 @@ class JsonParser:
             }
         self.dump(self.data)
 
-    
+    def make_user_data(self, name, interests, groups, location, roles):
+        return {"name":name,
+            "interests": interests,
+            "groups": groups,
+            "location": location,
+            "secret_santa_recipient": "",
+            "roles": roles 
+            } 
+
 if __name__ == "__main__":
     parser = JsonParser("test.json")
     parser.print_contents()
+    
+    
