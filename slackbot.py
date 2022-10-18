@@ -18,10 +18,10 @@ def secret_santa_begin_callback(ack, body, client, payload):
     # Acknowledge the command request
     ack()
     secret_santa_app.set_begin(
-        payload['state']['values'][payload['blocks'][3]['block_id']]['datepicker-action']['selected_date'],
-        payload['state']['values'][payload['blocks'][4]['block_id']]['datepicker-action']['selected_date'],
+        payload['state']['values'][payload['blocks'][3]['block_id']]['datepicker-begin-date']['selected_date'],
+        payload['state']['values'][payload['blocks'][4]['block_id']]['datepicker-start-date']['selected_date'],
         body['user']['id'],
-        payload['state']['values'][payload['blocks'][6]['block_id']]['users_select-action']['selected_channel']
+        payload['state']['values'][payload['blocks'][6]['block_id']]['channels-select-begin']['selected_channel']
         )
     # Call views_open with the built-in client
     client.views_open(
@@ -106,7 +106,7 @@ def secret_santa_begin_modal(ack, body, client):
                             "text": "Select a date",
                             "emoji": True
                         },
-                        "action_id": "datepicker-action"
+                        "action_id": "datepicker-begin-date"
                     }
                 },
                 {
@@ -123,7 +123,7 @@ def secret_santa_begin_modal(ack, body, client):
                             "text": "Select a date",
                             "emoji": True
                         },
-                        "action_id": "datepicker-action"
+                        "action_id": "datepicker-start-date"
                     }
                 },
                 {
@@ -135,7 +135,7 @@ def secret_santa_begin_modal(ack, body, client):
                             "text": "Select users",
                             "emoji": True
                         },
-                        "action_id": "multi_users_select-action"
+                        "action_id": "multi-users-begin"
                     },
                     "label": {
                         "type": "plain_text",
@@ -156,12 +156,32 @@ def secret_santa_begin_modal(ack, body, client):
                             "text": "Select a channel",
                             "emoji": True
                         },
-                        "action_id": "users_select-action"
+                        "action_id": "channels-select-begin"
                     }
                 }
             ]
         }
     )
+
+@app.action('datepicker-begin-date')
+def datepicker_begin_date(body, logger, ack):
+    ack()
+    logger.info(body)
+
+@app.action('datepicker-start-date')
+def datepicker_start_date(body, logger, ack):
+    ack()
+    logger.info(body)
+
+@app.action('multi-users-begin')
+def multi_users_begin(body, logger, ack):
+    ack()
+    logger.info(body)
+
+@app.action('channels-select-begin')
+def channels_select_begin(body, logger, ack):
+    ack()
+    logger.info(body)
 
 # Listen for a shortcut invocation
 @app.shortcut("example_modal")
@@ -211,12 +231,217 @@ def user_secret_santa(ack, body, client):
     ack()
     #print(body['trigger_id'])
     # Call views_open with the built-in client
+    if secret_santa_app.isUserInDatabase():
+        blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Please enter your user information here to help your Secret Santa out!"
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "multiline": True,
+                        "initial_value": secret_santa_app.data['users'][body['user']['id']]['interests'],
+                        "action_id": "plain_text_input_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Insert your interests here",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "multi_static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select group/s",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Leadership",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Leadership"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Archean",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Archean"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Protozoic",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Protozoic"
+                            }
+                        ],
+                        "initial_options": secret_santa_app.data['users'][body['user']['id']]['groups_slack'],
+                        "action_id": "multi_static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your group/s that you belong to",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select an item",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Iowa City, IA",
+                                    "emoji": True
+                                },
+                                "value": "Iowa City, IA"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "San Antonio, TX",
+                                    "emoji": True
+                                },
+                                "value": "San Antonio, TX"
+                            }
+                        ],
+                        "initial_option": secret_santa_app.data['users'][body['user']['id']]['location_slack'],
+                        "action_id": "static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your location",
+                        "emoji": True
+                    }
+                }
+            ]
+    else:
+        blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Please enter your user information here to help your Secret Santa out!"
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "multiline": True,
+                        "action_id": "plain_text_input_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Insert your interests here",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "multi_static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select group/s",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Leadership",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Leadership"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Archean",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Archean"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Protozoic",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Protozoic"
+                            }
+                        ],
+                        "action_id": "multi_static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your group/s that you belong to",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select an item",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Iowa City, IA",
+                                    "emoji": True
+                                },
+                                "value": "Iowa City, IA"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "San Antonio, TX",
+                                    "emoji": True
+                                },
+                                "value": "San Antonio, TX"
+                            }
+                        ],
+                        "action_id": "static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your location",
+                        "emoji": True
+                    }
+                }
+            ]
     client.views_open(
         # Pass a valid trigger_id within 3 seconds of receiving it
         trigger_id=body["trigger_id"],
         view={
+            "callback_id": "secret_santa_user_submission",
             "type": "modal",
-            "callback_id": "user_secret_santa_submission",
             "title": {
                 "type": "plain_text",
                 "text": "My App",
@@ -225,48 +450,53 @@ def user_secret_santa(ack, body, client):
             "submit": {
                 "type": "plain_text",
                 "text": "Submit",
-                "emoji": True,
+                "emoji": True
             },
             "close": {
                 "type": "plain_text",
-                "text": "Close",
+                "text": "Cancel",
                 "emoji": True
             },
+            "blocks": blocks
+        }
+    )
+
+@app.view("secret_santa_user_submission")
+def handle_secret_santa_submission(ack, body, client, logger, payload):
+    ack()
+    #print(payload['blocks'])
+    secret_santa_app.set_user(
+        body['user']['id'],
+        body['user']['name'],
+        body['user']['username'],
+        payload['state']['values'][payload['blocks'][1]['block_id']]['plain_text_input_user_submission']['value'],
+        [ values['value'] for values in payload['state']['values'][payload['blocks'][2]['block_id']]['multi_static_select_user_submission']['selected_options'] ],
+        payload['state']['values'][payload['blocks'][2]['block_id']]['multi_static_select_user_submission']['selected_options'],
+        payload['state']['values'][payload['blocks'][3]['block_id']]['static_select_user_submission']['selected_option']['value'],
+        payload['state']['values'][payload['blocks'][3]['block_id']]['static_select_user_submission']['selected_option']
+        )
+
+    client.views_open(
+        # Pass a valid trigger_id within 3 seconds of receiving it
+        trigger_id=body["trigger_id"],
+        # View payload
+        view={
+            "type": "modal",
+            # View identifier
+            "callback_id": "secret_santa_user_submission_callback",
+            "title": {"type": "plain_text", "text": "My App"},
             "blocks": [
                 {
-                    "type": "divider"
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "This is the page to edit your profile for Secret Santa."
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "plain_text_input",
-                        "multiline": True,
-                        "action_id": "plain_text_input-action"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "List your interests here",
-                        "emoji": True
-                    }
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Your response has been submitted!"
                 }
+              }
             ]
         }
     )
 
-@app.view("user_secret_santa_submission")
-def handle_secret_santa_submission(ack, body, logger, payload):
-    ack()
-    print(body.keys())
-    print(body['user'], body['team'])
-    print(payload)
-    logger.info(body)
 
 #Event loggers that record events that happen
 #This leads to less errors in the terminal as well
