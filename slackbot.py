@@ -1,6 +1,7 @@
 import os
 import requests
-import datetime 
+from SecretSantaClasses import SecretSanta
+import datetime
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
@@ -9,88 +10,34 @@ load_dotenv()
 # Initializes your app with your bot token and socket mode handler
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 user = os.environ.get("SLACK_USER_TOKEN")
-
-@app.command("/begin")
-def secretSanta_begin(ack, respond, payload):
-  blocks = [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": ":santa: Secret Santa :santa:",
-                    "emoji": True
-                }
-            },
-            {
-                "type": "divider"
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*You want to begin the process of having a Secret Santa this year!*\nPlease fill out the following information..."
-                }
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Pick a deadline to signup by:"
-                },
-                "accessory": {
-                    "type": "datepicker",
-                    "initial_date": f'{datetime.date.today()}',
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select a date",
-                        "emoji": True
-                    },
-                    "action_id": "datepicker-action"
-                }
-            },
-            {
-                "type": "input",
-                "element": {
-                    "type": "multi_users_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select users",
-                        "emoji": True
-                    },
-                    "action_id": "multi_users_select-action"
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Choose some users to start!",
-                    "emoji": True
-                }
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Select a channel for Secret Santa to post in*"
-                },
-                "accessory": {
-                    "type": "channels_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select a channel",
-                        "emoji": True
-                    },
-                    "action_id": "users_select-action"
-                }
-            }
-        ]
-  ack()
-  respond(text="Secret Santa Begin Message", blocks=blocks)
-
+secret_santa_app = SecretSanta('test.json')
 
 # Listen for a button invocation with action_id `coffee` 
-@app.action("coffee")
-def open_coffee(ack, body, client):
+@app.view("secret_santa_begin_callback")
+def secret_santa_begin_callback(ack, body, client, payload):
     # Acknowledge the command request
     ack()
+
+    '''
+    print(body['user'])
+    print(payload.keys())
+    print(payload['blocks'])
+    print(payload['state']['values'])
+    '''
+    print(payload['state']['values'][payload['blocks'][3]['block_id']])
+    user_data_begin = [ 
+        payload['state']['values'][list(payload['state']['values'].keys())[0]],
+        payload['state']['values'][list(payload['state']['values'].keys())[1]],
+        payload['state']['values'][list(payload['state']['values'].keys())[2]],
+        payload['state']['values'][list(payload['state']['values'].keys())[3]] ]
+    #print(user_data_begin)
+    #secret_santa_app.set_begin(user_data_begin[0]['datepicker-action']['selected_date'],user_data_begin[1]['datepicker-action']['selected_date'],body['user']['id'],user_data_begin[3]['users_select-action']['selected_channel'])
+    secret_santa_app.set_begin(
+        payload['state']['values'][payload['blocks'][3]['block_id']]['datepicker-action']['selected_date'],
+        payload['state']['values'][payload['blocks'][4]['block_id']]['datepicker-action']['selected_date'],
+        body['user']['id'],
+        payload['state']['values'][payload['blocks'][6]['block_id']]['users_select-action']['selected_channel']
+        )
     # Call views_open with the built-in client
     client.views_open(
         # Pass a valid trigger_id within 3 seconds of receiving it
@@ -101,35 +48,22 @@ def open_coffee(ack, body, client):
             # View identifier
             "callback_id": "view_1",
             "title": {"type": "plain_text", "text": "My App"},
-            "submit": {"type": "plain_text", "text": "Submit"},
             "blocks": [
                 {
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "I heard you say the magic word, so enjoy this image!"
+                  "text": "Your response has been submitted!"
                 }
-              },
-              {
-                "type": "image",
-                "title": {
-                  "type": "plain_text",
-                  "text": ":coffee:",
-                  "emoji": True
-                },
-                "image_url": requests.get('https://coffee.alexflipnote.dev/random.json').json()['file'],
-                "alt_text": "some coffee"
               }
             ]
         }
     )
 
 # Listen for a shortcut invocation
-@app.shortcut("begin")
-def open_modal(ack, body, client):
+@app.shortcut("secret_santa_begin")
+def secret_santa_begin_modal(ack, body, client):
     # Acknowledge the command request
-    print(body.keys())
-    print(client.keys())
     ack()
     # Call views_open with the built-in client
     client.views_open(
@@ -137,10 +71,11 @@ def open_modal(ack, body, client):
         trigger_id=body["trigger_id"],
         # View payload
         view={
+            "callback_id": "secret_santa_begin_callback",
             "type": "modal",
             "title": {
                 "type": "plain_text",
-                "text": "My App",
+                "text": "Secret Santa",
                 "emoji": True
             },
             "submit": {
@@ -158,7 +93,7 @@ def open_modal(ack, body, client):
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": ":santa: Secret Santa :santa:",
+                        "text": ":santa: Begin your Secret Santa event! :santa:",
                         "emoji": True
                     }
                 },
@@ -176,11 +111,28 @@ def open_modal(ack, body, client):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "Pick a deadline to signup by:"
+                        "text": "Pick a time to start the Secret Santa Signup:"
                     },
                     "accessory": {
-                        "type": "datepicker",
-                        "initial_date": "1990-04-28",
+                        "type": "datepicker", #datetime.today()
+                        "initial_date": str(datetime.date.today()),
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a date",
+                            "emoji": True
+                        },
+                        "action_id": "datepicker-action"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Pick a time to start the Secret Santa Event:"
+                    },
+                    "accessory": {
+                        "type": "datepicker", #datetime.today()
+                        "initial_date": str(datetime.date.today()),
                         "placeholder": {
                             "type": "plain_text",
                             "text": "Select a date",
@@ -202,7 +154,7 @@ def open_modal(ack, body, client):
                     },
                     "label": {
                         "type": "plain_text",
-                        "text": "Choose some users to start!",
+                        "text": "Choose some users to inform of the Secret Santa Event!",
                         "emoji": True
                     }
                 },
@@ -335,8 +287,8 @@ def handle_secret_santa_submission(ack, body, logger, payload):
 #Event loggers that record events that happen
 #This leads to less errors in the terminal as well
 @app.event("message")
-def handle_message_events(body, logger):
-  logger.info(body)
+def handle_message_events(body, logger, payload):
+    logger.info(body)
 
 @app.event("pin_added")
 def handle_pin_added_events(body, logger):
