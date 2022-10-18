@@ -209,12 +209,11 @@ def open_modal(ack, body, client):
 def user_secret_santa(ack, body, client):
     # Acknowledge the command request
     ack()
-    print(body['trigger_id'])
+    #print(body['trigger_id'])
     # Call views_open with the built-in client
     client.views_open(
         # Pass a valid trigger_id within 3 seconds of receiving it
         trigger_id=body["trigger_id"],
-        # View payload
         view={
             "type": "modal",
             "callback_id": "user_secret_santa_submission",
