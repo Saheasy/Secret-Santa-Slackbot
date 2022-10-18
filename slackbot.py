@@ -17,21 +17,6 @@ secret_santa_app = SecretSanta('test.json')
 def secret_santa_begin_callback(ack, body, client, payload):
     # Acknowledge the command request
     ack()
-
-    '''
-    print(body['user'])
-    print(payload.keys())
-    print(payload['blocks'])
-    print(payload['state']['values'])
-    '''
-    print(payload['state']['values'][payload['blocks'][3]['block_id']])
-    user_data_begin = [ 
-        payload['state']['values'][list(payload['state']['values'].keys())[0]],
-        payload['state']['values'][list(payload['state']['values'].keys())[1]],
-        payload['state']['values'][list(payload['state']['values'].keys())[2]],
-        payload['state']['values'][list(payload['state']['values'].keys())[3]] ]
-    #print(user_data_begin)
-    #secret_santa_app.set_begin(user_data_begin[0]['datepicker-action']['selected_date'],user_data_begin[1]['datepicker-action']['selected_date'],body['user']['id'],user_data_begin[3]['users_select-action']['selected_channel'])
     secret_santa_app.set_begin(
         payload['state']['values'][payload['blocks'][3]['block_id']]['datepicker-action']['selected_date'],
         payload['state']['values'][payload['blocks'][4]['block_id']]['datepicker-action']['selected_date'],
