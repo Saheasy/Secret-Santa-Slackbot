@@ -1,7 +1,1 @@
-{
-    "users": {
-        "spencer":"meow"
-    }, 
-    "begin-deadline": "",
-    "start-deadline":""
-}
+{"begin_date": "2022-10-18", "start_date": "2022-10-25", "manager": "U04571N4ZQV", "channel_id": "C045A0ZQ1SP", "users": {"U04571N4ZQV": {"name": "spencer.sahu", "username": "spencer.sahu", "interests": "I like ducks", "groups": ["Pathfinders Leadership", "Pathfinders Archean", "Pathfinders Protozoic"], "groups_slack": [{"text": {"type": "plain_text", "text": "Pathfinders Leadership", "emoji": true}, "value": "Pathfinders Leadership"}, {"text": {"type": "plain_text", "text": "Pathfinders Archean", "emoji": true}, "value": "Pathfinders Archean"}, {"text": {"type": "plain_text", "text": "Pathfinders Protozoic", "emoji": true}, "value": "Pathfinders Protozoic"}], "location": "Iowa City, IA", "location_slack": {"text": {"type": "plain_text", "text": "Iowa City, IA", "emoji": true}, "value": "Iowa City, IA"}}}}

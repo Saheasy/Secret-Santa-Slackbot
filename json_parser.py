@@ -5,8 +5,10 @@ class JsonParser:
         self.filename = filename
         file = open(filename)
         self.data = json.load(file)
+        if 'users' not in self.data:
+            self.data['users'] = {}
         file.close()
-    
+
     def update_from_file(self):
         file = open(self.filename)
         self.data = json.load(file)

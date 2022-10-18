@@ -10,7 +10,7 @@ load_dotenv()
 # Initializes your app with your bot token and socket mode handler
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 user = os.environ.get("SLACK_USER_TOKEN")
-secret_santa_app = SecretSanta('test.json')
+secret_santa_app = SecretSanta('data.json')
 
 # Listen for a button invocation with action_id `coffee` 
 @app.view("secret_santa_begin_callback")
@@ -497,6 +497,41 @@ def handle_secret_santa_submission(ack, body, client, logger, payload):
         }
     )
 
+@app.shortcut("our_secret_santa")
+def our_secret_santa(ack, body, client):
+    # Acknowledge the command request
+    ack()
+    # Call views_open with the built-in client
+    client.views_open(
+        # Pass a valid trigger_id within 3 seconds of receiving it
+        trigger_id=body["trigger_id"],
+        # View payload
+        view={
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "My App",
+                "emoji": True
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Close",
+                "emoji": True
+            },
+            "blocks": [
+                {
+                    "type": "divider"
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Manager: <@{}>\nBegin Date{}\nStart Date: {}\nRegistered Users: {}".format(secret_santa_app.data['manager'],secret_santa_app.data['begin_date'],secret_santa_app.data['start_date'],len(secret_santa_app.data['users'].keys()))
+                    }
+                }
+            ]
+        }
+    )
 
 #Event loggers that record events that happen
 #This leads to less errors in the terminal as well
