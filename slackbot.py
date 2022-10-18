@@ -231,7 +231,7 @@ def user_secret_santa(ack, body, client):
     ack()
     #print(body['trigger_id'])
     # Call views_open with the built-in client
-    if secret_santa_app.isUserInDatabase():
+    if secret_santa_app.isUserInDatabase(body['user']['id']):
         blocks = [
                 {
                     "type": "section",
