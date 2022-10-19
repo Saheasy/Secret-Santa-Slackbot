@@ -227,215 +227,116 @@ def open_modal(ack, body, client):
 # Listen for a shortcut invocation
 @app.shortcut("user_secret_santa")
 def user_secret_santa(ack, body, client):
+    blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Please enter your user information here to help your Secret Santa out!"
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "multiline": True,
+                        "action_id": "plain_text_input_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Insert your interests here",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "multi_static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select group/s",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Leadership",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Leadership"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Archean",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Archean"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pathfinders Protozoic",
+                                    "emoji": True
+                                },
+                                "value": "Pathfinders Protozoic"
+                            }
+                        ],
+                        "action_id": "multi_static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your group/s that you belong to",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select an item",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Iowa City, IA",
+                                    "emoji": True
+                                },
+                                "value": "Iowa City, IA"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "San Antonio, TX",
+                                    "emoji": True
+                                },
+                                "value": "San Antonio, TX"
+                            }
+                        ],
+                        "action_id": "static_select_user_submission"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Select your location",
+                        "emoji": True
+                    }
+                }
+            ]
+    
     # Acknowledge the command request
     ack()
     #print(body['trigger_id'])
     # Call views_open with the built-in client
     if secret_santa_app.isUserInDatabase(body['user']['id']):
-        blocks = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Please enter your user information here to help your Secret Santa out!"
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "plain_text_input",
-                        "multiline": True,
-                        "initial_value": secret_santa_app.data['users'][body['user']['id']]['interests'],
-                        "action_id": "plain_text_input_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Insert your interests here",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "multi_static_select",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select group/s",
-                            "emoji": True
-                        },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Leadership",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Leadership"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Archean",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Archean"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Protozoic",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Protozoic"
-                            }
-                        ],
-                        "initial_options": secret_santa_app.data['users'][body['user']['id']]['groups_slack'],
-                        "action_id": "multi_static_select_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Select your group/s that you belong to",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "static_select",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select an item",
-                            "emoji": True
-                        },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Iowa City, IA",
-                                    "emoji": True
-                                },
-                                "value": "Iowa City, IA"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "San Antonio, TX",
-                                    "emoji": True
-                                },
-                                "value": "San Antonio, TX"
-                            }
-                        ],
-                        "initial_option": secret_santa_app.data['users'][body['user']['id']]['location_slack'],
-                        "action_id": "static_select_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Select your location",
-                        "emoji": True
-                    }
-                }
-            ]
-    else:
-        blocks = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Please enter your user information here to help your Secret Santa out!"
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "plain_text_input",
-                        "multiline": True,
-                        "action_id": "plain_text_input_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Insert your interests here",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "multi_static_select",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select group/s",
-                            "emoji": True
-                        },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Leadership",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Leadership"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Archean",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Archean"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Pathfinders Protozoic",
-                                    "emoji": True
-                                },
-                                "value": "Pathfinders Protozoic"
-                            }
-                        ],
-                        "action_id": "multi_static_select_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Select your group/s that you belong to",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "static_select",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select an item",
-                            "emoji": True
-                        },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Iowa City, IA",
-                                    "emoji": True
-                                },
-                                "value": "Iowa City, IA"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "San Antonio, TX",
-                                    "emoji": True
-                                },
-                                "value": "San Antonio, TX"
-                            }
-                        ],
-                        "action_id": "static_select_user_submission"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Select your location",
-                        "emoji": True
-                    }
-                }
-            ]
+        blocks[1]['element']['initial_value'] = secret_santa_app.data['users'][body['user']['id']]['interests']
+        blocks[2]['element']['initial_options'] = secret_santa_app.data['users'][body['user']['id']]['groups_slack']
+        blocks[3]['element']['initial_option'] = secret_santa_app.data['users'][body['user']['id']]['location_slack']
+        
     client.views_open(
         # Pass a valid trigger_id within 3 seconds of receiving it
         trigger_id=body["trigger_id"],

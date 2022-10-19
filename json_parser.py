@@ -26,8 +26,6 @@ class JsonParser:
 
 if __name__ == "__main__":
     parser = JsonParser("test.json")
-    parser.set_begin("2022-12-2", "2022-12-5", "dsadaiofja", "dmadadaj")
-    parser.print_contents()
     
     
     
