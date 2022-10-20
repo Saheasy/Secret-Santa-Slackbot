@@ -1,7 +1,7 @@
 import os
 import requests
 from SecretSantaClasses import SecretSanta
-import datetime
+from datetime import datetime
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
@@ -12,16 +12,25 @@ app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 user = os.environ.get("SLACK_USER_TOKEN")
 secret_santa_app = SecretSanta('data.json')
 
-# Listen for a button invocation with action_id `coffee` 
-@app.view("secret_santa_begin_callback")
-def secret_santa_begin_callback(ack, body, client, payload):
+@app.view("secret_santa_setup_callback")
+def secret_santa_setup_callback(ack, body, client, payload):
     # Acknowledge the command request
     ack()
+    print(payload['state']['values'])
+
+    id = [payload['blocks'][4]['block_id']][0]
+    begin_date = f'{payload["state"]["values"][id]["setup_datepicker_1"]["selected_date"]} {payload["state"]["values"][id]["setup_timepicker_1"]["selected_time"]}'
+
+
+    id = [payload['blocks'][6]['block_id']][0]
+    print(payload["state"]["values"][id])
+    start_date = f'{payload["state"]["values"][id]["setup_datepicker_2"]["selected_date"]} {payload["state"]["values"][id]["setup_timepicker_2"]["selected_time"]}'
+
     secret_santa_app.set_begin(
-        payload['state']['values'][payload['blocks'][3]['block_id']]['datepicker-begin-date']['selected_date'],
-        payload['state']['values'][payload['blocks'][4]['block_id']]['datepicker-start-date']['selected_date'],
-        body['user']['id'],
-        payload['state']['values'][payload['blocks'][6]['block_id']]['channels-select-begin']['selected_channel']
+        begin_date,
+        start_date,
+        payload['state']['values'][payload['blocks'][8]['block_id']]['multi_users_select-action']['selected_users'],
+        payload['state']['values'][payload['blocks'][9]['block_id']]['channels-select-begin']['selected_channel']
         )
     # Call views_open with the built-in client
     client.views_open(
@@ -47,7 +56,7 @@ def secret_santa_begin_callback(ack, body, client, payload):
 
 # Listen for a shortcut invocation
 @app.shortcut("secret_santa_begin")
-def secret_santa_begin_modal(ack, body, client):
+def secret_santa_setup(ack, body, client):
     # Acknowledge the command request
     ack()
     # Call views_open with the built-in client
@@ -55,8 +64,8 @@ def secret_santa_begin_modal(ack, body, client):
         # Pass a valid trigger_id within 3 seconds of receiving it
         trigger_id=body["trigger_id"],
         # View payload
-        view={
-            "callback_id": "secret_santa_begin_callback",
+        view= {
+            "callback_id": "secret_santa_setup_callback",
             "type": "modal",
             "title": {
                 "type": "plain_text",
@@ -96,35 +105,65 @@ def secret_santa_begin_modal(ack, body, client):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "Pick a time to start the Secret Santa Signup:"
-                    },
-                    "accessory": {
-                        "type": "datepicker", #datetime.today()
-                        "initial_date": str(datetime.date.today()),
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select a date",
-                            "emoji": True
-                        },
-                        "action_id": "datepicker-begin-date"
+                        "text": "Pick a time to begin registration for your Secret Santa"
                     }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "datepicker",
+                            "initial_date": datetime.today().strftime("%Y-%m-%d"),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a date",
+                                "emoji": True
+                            },
+                            "action_id": "setup_datepicker_1"
+                        },
+                        {
+                            "type": "timepicker",
+                            "initial_time": datetime.today().strftime("%H:%M"),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select time",
+                                "emoji": True
+                            },
+                            "action_id": "setup_timepicker_1"
+                        }
+                    ]
                 },
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "Pick a time to start the Secret Santa Event:"
-                    },
-                    "accessory": {
-                        "type": "datepicker", #datetime.today()
-                        "initial_date": str(datetime.date.today()),
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select a date",
-                            "emoji": True
-                        },
-                        "action_id": "datepicker-start-date"
+                        "text": "Pick a time to start your Secret Santa Event"
                     }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "datepicker",
+                            "initial_date": datetime.today().strftime("%Y-%m-%d"),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select a date",
+                                "emoji": True
+                            },
+                            "action_id": "setup_datepicker_2"
+                        },
+                        {
+                            "type": "timepicker",
+                            "initial_time": datetime.today().strftime("%H:%M"),
+                            "placeholder": {
+                                "type": "plain_text",
+                                "text": "Select time",
+                                "emoji": True
+                            },
+                            "action_id": "setup_timepicker_2"
+                        }
+                    ]
                 },
                 {
                     "type": "input",
@@ -140,6 +179,23 @@ def secret_santa_begin_modal(ack, body, client):
                     "label": {
                         "type": "plain_text",
                         "text": "Choose some users to inform of the Secret Santa Event!",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "multi_users_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select managers",
+                            "emoji": True
+                        },
+                        "action_id": "multi_users_select-action"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Choose all people who can manage the Secret Santa Event ",
                         "emoji": True
                     }
                 },
@@ -163,6 +219,7 @@ def secret_santa_begin_modal(ack, body, client):
         }
     )
 
+
 @app.action('datepicker-begin-date')
 def datepicker_begin_date(body, logger, ack):
     ack()
@@ -182,47 +239,6 @@ def multi_users_begin(body, logger, ack):
 def channels_select_begin(body, logger, ack):
     ack()
     logger.info(body)
-
-# Listen for a shortcut invocation
-@app.shortcut("example_modal")
-def open_modal(ack, body, client):
-    # Acknowledge the command request
-    ack()
-    print(body['trigger_id'])
-    # Call views_open with the built-in client
-    client.views_open(
-        # Pass a valid trigger_id within 3 seconds of receiving it
-        trigger_id=body["trigger_id"],
-        # View payload
-        view={
-            "type": "modal",
-            # View identifier
-            "callback_id": "view_1",
-            "title": {"type": "plain_text", "text": "My App"},
-            "submit": {"type": "plain_text", "text": "Submit"},
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {"type": "mrkdwn", "text": "Welcome to a modal with _blocks_"},
-                    "accessory": {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Click me!"},
-                        "action_id": "button_abc"
-                    }
-                },
-                {
-                    "type": "input",
-                    "block_id": "input_c",
-                    "label": {"type": "plain_text", "text": "What are your hopes and dreams?"},
-                    "element": {
-                        "type": "plain_text_input",
-                        "action_id": "dreamy_input",
-                        "multiline": True
-                    }
-                }
-            ]
-        }
-    )
 
 # Listen for a shortcut invocation
 @app.shortcut("user_secret_santa")
@@ -336,7 +352,7 @@ def user_secret_santa(ack, body, client):
         blocks[1]['element']['initial_value'] = secret_santa_app.data['users'][body['user']['id']]['interests']
         blocks[2]['element']['initial_options'] = secret_santa_app.data['users'][body['user']['id']]['groups_slack']
         blocks[3]['element']['initial_option'] = secret_santa_app.data['users'][body['user']['id']]['location_slack']
-        
+
     client.views_open(
         # Pass a valid trigger_id within 3 seconds of receiving it
         trigger_id=body["trigger_id"],
@@ -397,6 +413,7 @@ def handle_secret_santa_submission(ack, body, client, logger, payload):
             ]
         }
     )
+
 
 @app.shortcut("our_secret_santa")
 def our_secret_santa(ack, body, client):

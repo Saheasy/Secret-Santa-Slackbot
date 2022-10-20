@@ -1,11 +1,23 @@
 import random
 from json_parser import JsonParser
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class SecretSanta(JsonParser):
-    empty_option = {"text": { "type": "plain_text","text": "","emoji": True},"value": "" }
-    
+
     def __init__(self, filename):
         JsonParser.__init__(self,filename)
+        self.scheduler = BackgroundScheduler()
+        if "begin_date" in self.data and "start_date" in self.data:
+            #self.begin_date = self.scheduler.add_job(self.begin, self.data['begin_date'])
+            #self.start_date = self.scheduler.add_job(self.start, self.data['start_date'])
+            #self.scheduler.start()
+            print("start scheduler")
+
+    def begin(self):
+        pass
+
+    def start(self):
+        pass
 
     def randomize(self):
         my_list = list(self.data['users'].keys())
